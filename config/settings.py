@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken', # For login token
     'corsheaders',
     # Local
+    'drf_yasg',  # <--- Add this line
     'core',
 ]
 
