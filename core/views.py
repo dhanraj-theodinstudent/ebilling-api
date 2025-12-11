@@ -16,14 +16,20 @@ from .serializers import *
 # 1. Authentication & User Management
 # ==========================================
 
+# core/views.py
+
 class AuthViewSet(viewsets.ViewSet):
-    permission_classes = [AllowAny] # Allow anyone to attempt login
+    """
+    Handles User Authentication:
+    1. Login (POST /api/auth/login/)
+    2. Register (POST /api/auth/register/)
+    """
+    permission_classes = [] # Allow anyone (even strangers) to access these endpoints
 
     @action(detail=False, methods=['post'])
     def login(self, request):
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
-            # Authenticate using mobile_number and password
             user = authenticate(
                 username=serializer.data['mobile_number'],
                 password=serializer.data['password']
@@ -33,9 +39,27 @@ class AuthViewSet(viewsets.ViewSet):
                 return Response({
                     'token': token.key, 
                     'user_id': user.id,
-                    'mobile_number': user.mobile_number
+                    'message': 'Login Successful'
                 })
             return Response({'error': 'Invalid Credentials'}, status=400)
+        return Response(serializer.errors, status=400)
+
+    # --- NEW REGISTRATION ENDPOINT ---
+    @action(detail=False, methods=['post'])
+    def register(self, request):
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            # Create the user
+            user = serializer.save()
+            
+            # Auto-generate token so they are logged in immediately
+            token, _ = Token.objects.get_or_create(user=user)
+            
+            return Response({
+                'token': token.key,
+                'user_id': user.id,
+                'message': 'Registration Successful'
+            }, status=201)
         return Response(serializer.errors, status=400)
 
 class ChangePasswordView(views.APIView):

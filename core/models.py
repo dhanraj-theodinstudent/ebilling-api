@@ -20,6 +20,7 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     username = None
     mobile_number = models.CharField(max_length=15, unique=True)
+    #email, is_employee #is_vender
     
     USERNAME_FIELD = 'mobile_number'
     REQUIRED_FIELDS = []
