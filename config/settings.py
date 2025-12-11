@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken', # For login token
     'corsheaders',
     # Local
-    'drf_yasg',  # <--- Add this line
+    'drf_spectacular',  # <--- Add this (Remove 'drf_yasg')
     'core',
 ]
 
@@ -138,10 +138,22 @@ AUTH_USER_MODEL = 'core.User'
 # DRF Config
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',  # For Mobile App
-        'rest_framework.authentication.SessionAuthentication', # For Browser Testing
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    # Tell DRF to use Spectacular for Schema generation
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# Add the specific configuration for the documentation
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'e-Billing Mobile App API',
+    'DESCRIPTION': 'API documentation for vendors, customers, and inventory management.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # This ensures the "Authorize" button works with your "Token <key>" format
+    'COMPONENT_SPLIT_REQUEST': True,
 }
