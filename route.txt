@@ -1,0 +1,12 @@
+Feature,HTTP Method,Endpoint,Note
+Login,POST,/api/auth/login/,"Body: {mobile_number: ""..."", password: ""...""}. Returns Token."
+Dashboard,GET,/api/dashboard/,Returns all counts for card views.
+Register Vendor,POST,/api/vendors/,
+Register Customer,POST,/api/customers/,
+Register Employee,POST,/api/employees/,
+Product Master,GET/POST,/api/products/,Standard CRUD.
+Stock Alert,GET,/api/products/stock_alerts/,Returns products where quantity <= stock_alert.
+Create Invoice,POST,/api/invoices/,JSON must include items array with product IDs.
+WhatsApp Share,GET,/api/invoices/{id}/whatsapp_share/,Returns a deep link to open WhatsApp.
+Pay Salary,POST,/api/expenses/pay_salary/,Special endpoint to link expense to employee.
+Change Password,POST,/api/change-password/,Requires Auth Token in header.

@@ -1,0 +1,90 @@
+# core/serializers.py
+from rest_framework import serializers
+from .models import *
+from django.contrib.auth import authenticate
+
+class UserLoginSerializer(serializers.Serializer):
+    mobile_number = serializers.CharField()
+    password = serializers.CharField()
+
+class ChangePasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+    confirm_password = serializers.CharField(required=True)
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_password']:
+            raise serializers.ValidationError("New passwords do not match")
+        if len(data['new_password']) < 6:
+            raise serializers.ValidationError("Password must be at least 6 characters")
+        return data
+
+class VendorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vendor
+        fields = '__all__'
+
+class CustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Customer
+        fields = '__all__'
+
+class EmployeeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Employee
+        fields = '__all__'
+
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+class IncomeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Income
+        fields = '__all__'
+
+class ExpenseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Expense
+        fields = '__all__'
+
+class BankAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BankAccount
+        fields = '__all__'
+
+class InvoiceItemSerializer(serializers.ModelSerializer):
+    product_name = serializers.ReadOnlyField(source='product.product_name')
+    class Meta:
+        model = InvoiceItem
+        fields = ['id', 'product', 'product_name', 'quantity', 'price']
+
+class InvoiceSerializer(serializers.ModelSerializer):
+    items = InvoiceItemSerializer(many=True)
+    outstanding = serializers.ReadOnlyField(source='outstanding_amount')
+    customer_name = serializers.ReadOnlyField(source='customer.customer_name')
+    vendor_name = serializers.ReadOnlyField(source='vendor.vendor_name')
+
+    class Meta:
+        model = Invoice
+        fields = '__all__'
+
+    def create(self, validated_data):
+        items_data = validated_data.pop('items')
+        invoice = Invoice.objects.create(**validated_data)
+        
+        # Logic to update stock
+        is_sale = invoice.invoice_type == 'SALE'
+        
+        for item_data in items_data:
+            InvoiceItem.objects.create(invoice=invoice, **item_data)
+            product = item_data['product']
+            if product:
+                if is_sale:
+                    product.quantity -= item_data['quantity']
+                else: # Purchase
+                    product.quantity += item_data['quantity']
+                product.save()
+                
+        return invoice
